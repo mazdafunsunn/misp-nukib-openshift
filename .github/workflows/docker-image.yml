@@ -32,27 +32,6 @@ jobs:
       run: python3 .github/workflows/docker-version.py ${{ github.event.inputs.misp_ref }}
       id: variables
     -
-      name: Build Docker for linux/arm64
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        platforms: linux/arm64
-        tags: ${{ env.TEST_TAG }}
-        cache-from: type=local,src=/tmp/.buildx-cache/arm64
-        cache-to: type=local,dest=/tmp/.buildx-cache-new/arm64,mode=max
-        build-args: |
-          CACHEBUST=${{ steps.variables.outputs.MISP_COMMIT }}
-          MISP_VERSION=${{ steps.variables.outputs.MISP_VERSION }}
-    -
-      # Temp fix
-      # https://github.com/docker/build-push-action/issues/252
-      # https://github.com/moby/buildkit/issues/1896
-      name: Move cache
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-        du -sh /tmp/.buildx-cache
-    -
       name: Login to GitHub Container Registry
       if: github.event_name != 'pull_request'
       uses: docker/login-action@v3
