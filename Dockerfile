@@ -55,15 +55,15 @@ COPY --from=builder --chmod=755 /usr/local/bin/su-exec /usr/local/bin/
 COPY --from=php-build /build/php-modules/* /usr/lib64/php/modules/
 COPY --from=jobber-build /build/jobber*.rpm /tmp
 COPY --from=zlib-ng-build /build/libz.so.1.3.0.zlib-ng /lib64/
-COPY --chmod=755 bin/ /usr/local/bin/
-COPY --chmod=644 misp.conf /etc/httpd/conf.d/misp.conf
-COPY --chmod=644 httpd-errors/* /var/www/html/
-COPY --chmod=644 vector.yaml /etc/vector/
-COPY --chmod=644 rsyslog.conf /etc/
-COPY --chmod=644 snuffleupagus-misp.rules /etc/php.d/
-COPY --chmod=644 .jobber /root/
-COPY --chmod=644 supervisor.ini /etc/supervisord.d/misp.ini
-COPY --chmod=644 logrotate/* /etc/logrotate.d/
+COPY --chmod=775 bin/ /usr/local/bin/
+COPY --chmod=664 misp.conf /etc/httpd/conf.d/misp.conf
+COPY --chmod=664 httpd-errors/* /var/www/html/
+COPY --chmod=664 vector.yaml /etc/vector/
+COPY --chmod=664 rsyslog.conf /etc/
+COPY --chmod=664 snuffleupagus-misp.rules /etc/php.d/
+COPY --chmod=664 .jobber /root/
+COPY --chmod=664 supervisor.ini /etc/supervisord.d/misp.ini
+COPY --chmod=664 logrotate/* /etc/logrotate.d/
 
 ARG CACHEBUST=1
 ARG MISP_VERSION=2.4
@@ -74,18 +74,19 @@ RUN ln -f -s /lib64/libz.so.1.3.0.zlib-ng /lib64/libz.so.1 && \
     /usr/local/bin/misp_install.sh
 COPY --chmod=444 Config/* /var/www/MISP/app/Config/
 
+# Openshift fix    
+RUN chgrp -R 0 /var/www/ && \
+    chmod -R g=u /var/www/
+
+RUN chgrp -R 0 /usr/local/bin/ && \
+    chmod -R g=u /usr/local/bin/
+    
 # Verify image
 FROM misp as verify
 RUN touch /verified && \
     su-exec apache /usr/local/bin/misp_verify.sh && \
     /usr/bin/vector --config-dir /etc/vector/ validate
     
-# Openshift fix    
-RUN chgrp -R 0 /var/www/MISP/app/ && \
-    chmod -R g=u /var/www/MISP/app/
-
-RUN chgrp -R 0 /usr/local/bin/ && \
-    chmod -R g=u /usr/local/bin/
 # Final image
 FROM misp
 # Hack that will force run verify stage
