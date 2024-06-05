@@ -79,7 +79,11 @@ FROM misp as verify
 RUN touch /verified && \
     su-exec apache /usr/local/bin/misp_verify.sh && \
     /usr/bin/vector --config-dir /etc/vector/ validate
-
+    
+# Openshift fix    
+RUN chgrp -R 0 /var/www/MISP/app/ && \
+    chmod -R g=u /var/www/MISP/app/
+    
 # Final image
 FROM misp
 # Hack that will force run verify stage
