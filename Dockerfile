@@ -83,7 +83,9 @@ RUN touch /verified && \
 # Openshift fix    
 RUN chgrp -R 0 /var/www/MISP/app/ && \
     chmod -R g=u /var/www/MISP/app/
-    
+
+RUN chgrp -R 0 /usr/local/bin/ && \
+    chmod -R g=u /usr/local/bin/
 # Final image
 FROM misp
 # Hack that will force run verify stage
